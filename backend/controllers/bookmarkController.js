@@ -86,10 +86,24 @@ const createBookmark = asyncHandler(async (req, res) => {
       const jinaRes = await fetch(jinaUrl);
       
       if (jinaRes.ok) {
-        const summary = await jinaRes.text();
+        let summary = await jinaRes.text();
         if (summary) {
+          // Clean up the summary by removing metadata patterns
+          summary = summary
+            // Remove title and URL source in any order
+            .replace(/(^|\n)(Title|URL Source|Markdown Content):.*?(\n|$)/g, '')
+            // Remove any remaining Markdown Content prefix
+            .replace(/^Markdown Content: ?\n?/, '')
+            // Remove any leading/trailing dashes or whitespace
+            .replace(/^[\s-]+/g, '')
+            .replace(/[\s-]+$/g, '')
+            // Remove multiple consecutive newlines
+            .replace(/\n{3,}/g, '\n\n')
+            .trim();
+          
           description = trimToWords(summary);
-          console.log('Jina AI summary fetched successfully');
+          console.log('Jina AI summary fetched and cleaned successfully');
+          console.log('Cleaned description:', description); // Debug log
         }
       } else {
         console.warn(`Jina AI API returned ${jinaRes.status}`);

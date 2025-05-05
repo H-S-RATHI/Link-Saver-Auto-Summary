@@ -67,6 +67,14 @@ interface BookmarkCardProps {
 
 function BookmarkCard({ bookmark, onDelete, view }: BookmarkCardProps) {
   const [isDeleting, setIsDeleting] = useState(false)
+  const [isExpanded, setIsExpanded] = useState(false)
+  
+  const getPreviewText = (text: string): string => {
+    const maxChars = 30
+    return text.length <= maxChars
+      ? text
+      : text.slice(0, maxChars) + '...'
+  }
 
   const handleDelete = async () => {
     try {
@@ -97,41 +105,50 @@ function BookmarkCard({ bookmark, onDelete, view }: BookmarkCardProps) {
       </CardHeader>
       
       <CardContent className={`${view === "list" ? "flex-1 py-6" : ""} space-y-2`}>
-        <Collapsible>
+        <div>
           <div className="space-y-2">
-            <CollapsibleTrigger asChild>
-              <button className="text-left w-full">
-                <CardTitle className="text-lg hover:underline">
+              <CardTitle className="text-lg">
+                <a 
+                  href={bookmark.url} 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="hover:underline"
+                >
                   {bookmark.title || new URL(bookmark.url).hostname}
-                </CardTitle>
-              </button>
-            </CollapsibleTrigger>
+                </a>
+              </CardTitle>
             
             <p className="text-sm text-muted-foreground break-all">
               <a href={bookmark.url} target="_blank" rel="noopener noreferrer" className="hover:underline">
-                {bookmark.url}
+                Link:{bookmark.url}
               </a>
             </p>
             
             {bookmark.description && (
-              <CollapsibleContent className="overflow-hidden mt-2">
+              <div className="mt-2">
                 <p className="text-sm text-muted-foreground whitespace-pre-line">
-                  {bookmark.description}
+                  {isExpanded ? bookmark.description : getPreviewText(bookmark.description)}
                 </p>
-              </CollapsibleContent>
-            )}
-            
-            {bookmark.description && (
-              <CollapsibleTrigger asChild>
-                <button className="flex items-center text-sm text-muted-foreground hover:text-foreground transition-colors">
-                  <ChevronDown className="h-4 w-4 mr-1 collapsible-chevron-up" />
-                  <ChevronUp className="h-4 w-4 mr-1 collapsible-chevron-down" />
-                  <span className="collapsible-text">Show more</span>
+                <button 
+                  onClick={() => setIsExpanded(!isExpanded)}
+                  className="flex items-center text-sm text-muted-foreground hover:text-foreground transition-colors mt-1"
+                >
+                  {isExpanded ? (
+                    <>
+                      <ChevronUp className="h-4 w-4 mr-1" />
+                      <span>Show less</span>
+                    </>
+                  ) : (
+                    <>
+                      <ChevronDown className="h-4 w-4 mr-1" />
+                      <span>Show more</span>
+                    </>
+                  )}
                 </button>
-              </CollapsibleTrigger>
+              </div>
             )}
           </div>
-        </Collapsible>
+        </div>
       </CardContent>
       <CardFooter className={`${view === "list" ? "flex-shrink-0 py-6" : ""} flex justify-between`}>
         <Button variant="outline" size="sm" asChild>
