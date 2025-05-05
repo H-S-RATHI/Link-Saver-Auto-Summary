@@ -61,14 +61,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       await fetchUser()
 
-      toast.success("Login successful", {
-        description: "You have been logged in successfully.",
-      })
+      toast.success("You have been logged in successfully")
     } catch (error) {
       console.error("Login failed:", error)
-      toast.error("Login failed", {
-        description: "Invalid email or password.",
-      })
+      toast.error("Invalid email or password")
       throw error
     }
   }
@@ -83,14 +79,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       await fetchUser()
 
-      toast.success("Account created", {
-        description: "Your account has been created successfully.",
-      })
+      toast.success("Your account has been created successfully")
     } catch (error) {
       console.error("Signup failed:", error)
-      toast.error("Signup failed", {
-        description: "Failed to create account. Email may already be in use.",
-      })
+      toast.error("Failed to create account. Email may already be in use.")
       throw error
     }
   }
@@ -100,9 +92,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     delete api.defaults.headers.common["Authorization"]
     setUser(null)
 
-    toast.success("Logged out", {
-      description: "You have been logged out successfully.",
-    })
+    toast.success("You have been logged out successfully")
   }
 
   return (
