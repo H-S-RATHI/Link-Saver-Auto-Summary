@@ -27,16 +27,21 @@ export function useBookmarks() {
 
   const addBookmarkMutation = useMutation({
     mutationFn: async (url: string) => {
-      const response = await api.post<Bookmark>("/api/bookmarks", { url })
-      return response.data
+      try {
+        const response = await api.post<Bookmark>("/api/bookmarks", { url })
+        return response.data
+      } catch (error: any) {
+        const errorMessage = error.response?.data?.message || error.message || "Failed to add bookmark"
+        throw new Error(errorMessage)
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["bookmarks"] })
       toast.success("Bookmark added successfully")
     },
-    onError: (error) => {
+    onError: (error: Error) => {
       console.error("Failed to add bookmark:", error)
-      toast.error("Failed to add bookmark")
+      toast.error(error.message || "Failed to add bookmark")
     },
   })
 

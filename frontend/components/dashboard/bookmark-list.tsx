@@ -1,10 +1,12 @@
 "use client"
 
 import { useState } from "react"
+import { ChevronDown, ChevronUp } from "lucide-react"
 
 import type { Bookmark } from "@/types"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
 import { Skeleton } from "@/components/ui/skeleton"
 import { AlertCircle, ExternalLink, Trash2, Loader2 } from "lucide-react"
 
@@ -93,11 +95,43 @@ function BookmarkCard({ bookmark, onDelete, view }: BookmarkCardProps) {
           />
         </div>
       </CardHeader>
-      <CardContent className={`${view === "list" ? "flex-1 py-6" : ""}`}>
-        <CardTitle className="line-clamp-1 text-lg">{bookmark.title || new URL(bookmark.url).hostname}</CardTitle>
-        {bookmark.description && (
-          <p className="mt-2 line-clamp-2 text-sm text-muted-foreground">{bookmark.description}</p>
-        )}
+      
+      <CardContent className={`${view === "list" ? "flex-1 py-6" : ""} space-y-2`}>
+        <Collapsible>
+          <div className="space-y-2">
+            <CollapsibleTrigger asChild>
+              <button className="text-left w-full">
+                <CardTitle className="text-lg hover:underline">
+                  {bookmark.title || new URL(bookmark.url).hostname}
+                </CardTitle>
+              </button>
+            </CollapsibleTrigger>
+            
+            <p className="text-sm text-muted-foreground break-all">
+              <a href={bookmark.url} target="_blank" rel="noopener noreferrer" className="hover:underline">
+                {bookmark.url}
+              </a>
+            </p>
+            
+            {bookmark.description && (
+              <CollapsibleContent className="overflow-hidden mt-2">
+                <p className="text-sm text-muted-foreground whitespace-pre-line">
+                  {bookmark.description}
+                </p>
+              </CollapsibleContent>
+            )}
+            
+            {bookmark.description && (
+              <CollapsibleTrigger asChild>
+                <button className="flex items-center text-sm text-muted-foreground hover:text-foreground transition-colors">
+                  <ChevronDown className="h-4 w-4 mr-1 collapsible-chevron-up" />
+                  <ChevronUp className="h-4 w-4 mr-1 collapsible-chevron-down" />
+                  <span className="collapsible-text">Show more</span>
+                </button>
+              </CollapsibleTrigger>
+            )}
+          </div>
+        </Collapsible>
       </CardContent>
       <CardFooter className={`${view === "list" ? "flex-shrink-0 py-6" : ""} flex justify-between`}>
         <Button variant="outline" size="sm" asChild>

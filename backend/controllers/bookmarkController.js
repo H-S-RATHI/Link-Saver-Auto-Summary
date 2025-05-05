@@ -2,6 +2,14 @@ import asyncHandler from "express-async-handler"
 import fetch from "node-fetch"
 import Bookmark from "../models/bookmarkModel.js"
 
+// Helper function to trim text to specified number of words
+const trimToWords = (text, maxWords = 50) => {
+  if (!text) return text;
+  const words = text.trim().split(/\s+/);
+  if (words.length <= maxWords) return text;
+  return words.slice(0, maxWords).join(' ') + '...';
+}
+
 // Helper function to extract metadata from a URL
 const extractMetadata = async (url) => {
   try {
@@ -34,11 +42,26 @@ const getBookmarks = asyncHandler(async (req, res) => {
 // @route   POST /api/bookmarks
 // @access  Private
 const createBookmark = asyncHandler(async (req, res) => {
-  const { url } = req.body
+  console.log('Request body:', req.body) // Debug log
+  
+  let { url } = req.body
 
   if (!url) {
     res.status(400)
     throw new Error("Please provide a URL")
+  }
+
+  // Ensure URL has a protocol
+  if (!url.startsWith('http://') && !url.startsWith('https://')) {
+    url = 'https://' + url
+  }
+
+  try {
+    // Check if the URL is valid
+    new URL(url)
+  } catch (error) {
+    res.status(400)
+    throw new Error("Please provide a valid URL")
   }
 
   // Check if bookmark already exists for this user
@@ -49,17 +72,48 @@ const createBookmark = asyncHandler(async (req, res) => {
     throw new Error("Bookmark already exists")
   }
 
-  // Extract metadata from URL
-  const metadata = await extractMetadata(url)
+  try {
+    // Extract metadata from URL
+    console.log('Extracting metadata for URL:', url) // Debug log
+    const metadata = await extractMetadata(url)
+    console.log('Extracted metadata:', metadata) // Debug log
 
-  const bookmark = await Bookmark.create({
-    url,
-    title: metadata.title,
-    description: metadata.description,
-    userId: req.user._id,
-  })
+    // Get description from Jina AI
+    let description = metadata.description ? trimToWords(metadata.description) : 'No description available';
+    try {
+      console.log('Fetching Jina AI summary for URL:', url);
+      const jinaUrl = `https://r.jina.ai/${encodeURIComponent(url)}`;
+      const jinaRes = await fetch(jinaUrl);
+      
+      if (jinaRes.ok) {
+        const summary = await jinaRes.text();
+        if (summary) {
+          description = trimToWords(summary);
+          console.log('Jina AI summary fetched successfully');
+        }
+      } else {
+        console.warn(`Jina AI API returned ${jinaRes.status}`);
+      }
+    } catch (jinaError) {
+      console.warn('Failed to fetch Jina AI summary:', jinaError);
+    }
 
-  res.status(201).json(bookmark)
+    const bookmark = await Bookmark.create({
+      url,
+      title: metadata.title || url, // Fallback to URL if no title
+      description: description,
+      userId: req.user._id,
+    })
+
+    
+    console.log('Created bookmark:', bookmark) // Debug log
+
+    res.status(201).json(bookmark)
+  } catch (error) {
+    console.error('Error creating bookmark:', error) // Debug log
+    res.status(500)
+    throw new Error(error.message || 'Failed to create bookmark')
+  }
 })
 
 // @desc    Delete a bookmark
