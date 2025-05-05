@@ -6,7 +6,6 @@ import { ChevronDown, ChevronUp } from "lucide-react"
 import type { Bookmark } from "@/types"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
 import { Skeleton } from "@/components/ui/skeleton"
 import { AlertCircle, ExternalLink, Trash2, Loader2 } from "lucide-react"
 
