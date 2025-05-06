@@ -164,5 +164,3 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 🙏 Acknowledgments
 
 - Special thanks to all the open-source libraries used in this project
-- Inspiration from various bookmarking applications
-- The amazing developer community for their support and contributions
